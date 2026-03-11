@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: "jdbc:mysql://localhost:3306/bootcamp_2510p"
+    username: "root"
+    password: "Admin1234$"
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      dialect: org.hibernate.dialect.MySQL8Dialect
+
+finnhub:
+  data: 
+    domain: "finnhub.io"
+    path: "/api/v1/"
+    quote: "quote"
+    profile: "stock/profile2"
+    query:
+      token: "d6o0uh9r01qsfaqqjv40d6o0uh9r01qsfaqqjv4g"
+    
