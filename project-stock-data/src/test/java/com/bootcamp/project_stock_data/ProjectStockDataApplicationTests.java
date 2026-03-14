@@ -1,4 +1,4 @@
-package project.project_stock_data;
+package com.bootcamp.project_stock_data;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

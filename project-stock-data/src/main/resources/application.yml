@@ -1,0 +1,36 @@
+server:
+  port: 8082
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5532/bootcamp_2510p
+    username: postgres
+    password: Admin1234
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6479
+  
+app:
+  provider:
+    base-url: http://localhost:8081
+    datatype:
+      profile: company
+      quote: quote
+  cache:
+    company-ttl-hours: 24
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
