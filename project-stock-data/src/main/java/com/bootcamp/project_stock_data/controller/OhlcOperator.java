@@ -9,5 +9,5 @@ import com.bootcamp.project_stock_data.model.OhlcDTO;
 
 public interface OhlcOperator {
   @GetMapping("ohlcs")
-  List<OhlcDTO> getOhlcs(@RequestParam String symbol); 
+  List<OhlcDTO> getOhlcsBySymbol(@RequestParam String symbol); 
 }

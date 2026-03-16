@@ -13,8 +13,9 @@ import com.bootcamp.project_stock_data.entity.StockEntity;
 public interface StockRepository extends JpaRepository<StockEntity, String>{
 
 @Query("select s.symbol from StockEntity s")
-  List<String> getAllSymbols();
+  List<String> findAllSymbols();
 
 
   Optional<StockEntity> findBySymbol(String symbol);
+
 }

@@ -7,7 +7,12 @@ import com.bootcamp.project_stock_data.entity.OhlcEntity;
 
 
 public interface OhlcService {
-  List<OhlcEntity> getOhlcs(String symbol);
+  List<OhlcEntity> getOhlcsBySymbol(String symbol);
+  
+  void deleteAll(); 
 
-  void deleteAll();  //! plan to run once a day before import new ohlc (by python), USING @SCHEDULE
+  // update ohlc everyday; 
+  //1.find today's ohlc for 500stocks
+  //2. save in db 
+
 }

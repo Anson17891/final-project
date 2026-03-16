@@ -7,7 +7,7 @@ import com.bootcamp.project_stock_data.model.QuoteDTO;
 public interface QuoteService {
 
 
-  List<QuoteDTO> getQuotes();
+  void updateQuotes();
     
   
 }

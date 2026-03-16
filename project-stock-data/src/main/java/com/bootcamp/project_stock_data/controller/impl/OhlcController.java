@@ -20,9 +20,12 @@ public class OhlcController implements OhlcOperator{
   private OhlcMapper ohlcMapper;
 
   @Override
-  public List<OhlcDTO> getOhlcs(String symbol){  //! follow work: check wheather symbol exist
+  public List<OhlcDTO> getOhlcsBySymbol(String symbol){  //! follow work: check wheather symbol exist
     List<OhlcDTO> ohlcs = new ArrayList<>();
-    List<OhlcEntity> ohlcEntities = this.ohlcService.getOhlcs(symbol);
+    List<OhlcEntity> ohlcEntities = this.ohlcService.getOhlcsBySymbol(symbol);
+    if(ohlcEntities == null||ohlcEntities.isEmpty()){
+      throw(new IllegalArgumentException("Symbol not found:" + symbol));
+    }
     for(OhlcEntity e : ohlcEntities){
       ohlcs.add(this.ohlcMapper.map(e));
     }

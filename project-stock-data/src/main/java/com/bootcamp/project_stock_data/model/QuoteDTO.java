@@ -1,5 +1,14 @@
 package com.bootcamp.project_stock_data.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class QuoteDTO {
   private String symbol;
   private Double currentPrice;

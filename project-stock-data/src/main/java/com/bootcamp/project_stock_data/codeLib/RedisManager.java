@@ -2,6 +2,7 @@
 package com.bootcamp.project_stock_data.codeLib;
 
 import java.time.Duration;
+import java.util.List;
 
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -32,6 +33,23 @@ public class RedisManager {
       return this.objectMapper.readValue(json, clazz);
     }
   }
+
+  public <T> List<T> getList(String key, Class<T> clazz) {  //!ai : prevent quoteController.getQuotes return wrong type .of list
+    String json = this.redisTemplate.opsForValue().get(key);
+    if (json == null) {
+        return null;
+    }
+    try {
+        return this.objectMapper.readValue(
+            json,
+
+            this.objectMapper.getTypeFactory().constructCollectionType(List.class, clazz)  //!constructCollectionType(List.class, clazz) -> List<clazz>
+        );
+    } catch (Exception e) {
+        throw new RuntimeException("Redis deserialization failed", e);
+    }
+}
+
 
   public <T> void set(String key, T value, Duration duration){
     String json = this.objectMapper.writeValueAsString(value);

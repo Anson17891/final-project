@@ -16,7 +16,7 @@ public class OhlcMapper {
                   .volume(ohlcEntity.getVolume())//
                   .low(ohlcEntity.getLow())//
                   .high(ohlcEntity.getHigh())//
-                  .tran_date(ohlcEntity.getTran_date())//
+                  .tranDate(ohlcEntity.getTranDate())//
                   .build();
   }
 }

@@ -25,13 +25,13 @@ private RedisManager redisManager;
 //   return this.ohlcRepository.findBySymbol(symbol);
 // }
   @Override
-  public List<OhlcEntity> getOhlcs(String symbol){
-  List<OhlcEntity> ohlcs= this.redisManager.get("ohlc:" + symbol,List.class);  //! changed key, prevent crush with profileEntity
+  public List<OhlcEntity> getOhlcsBySymbol(String symbol){
+  List<OhlcEntity> ohlcs= this.redisManager.getList("ohlc:" + symbol,OhlcEntity.class);  //! changed key, prevent crush with profileEntity
   if(ohlcs != null){
     return ohlcs;
   }
   else{
-    ohlcs = this.ohlcRepository.findBySymbol(symbol);
+    ohlcs = this.ohlcRepository.findAllBySymbol_SymbolOrderByTranDateDesc(symbol);
       this.redisManager.set("ohlc:" + symbol, ohlcs, Duration.ofSeconds(30L));
   
   return ohlcs;

@@ -24,7 +24,7 @@ public class ProfileMapper {
                         .symbol(companyDTO.getTicker())//
                         .marketCapitalization(companyDTO.getMarketCapitalization())//
                         .shareOutstanding(companyDTO.getShareOutstanding())//
-                        .finnhubIndustry(companyDTO.getFinnhubIndustry())//
+                        .industry(companyDTO.getFinnhubIndustry())//
                         .weburl(companyDTO.getWeburl())//
                         .country(companyDTO.getCountry())//
                         .phone(companyDTO.getPhone())//
@@ -44,7 +44,7 @@ public class ProfileMapper {
                       .logo(profileEntity.getLogo())//
                       .marketCapitalization(profileEntity.getMarketCapitalization())//
                       .shareOutstanding(profileEntity.getShareOutstanding())//
-                      .industry(profileEntity.getFinnhubIndustry())//
+                      .industry(profileEntity.getIndustry())//
                       .country(profileEntity.getCountry())//
                       .phone(profileEntity.getPhone())//
                       .weburl(profileEntity.getWeburl())//

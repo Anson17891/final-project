@@ -30,7 +30,7 @@ public class OhlcEntity {
   private Long id;
 
   @Column(name = "tran_date", nullable=false)
-  private LocalDate tran_date;
+  private LocalDate tranDate;
   @Column(nullable=false)
   private Double close;
   @Column(nullable=false)
@@ -43,6 +43,6 @@ public class OhlcEntity {
   private Double high;
 
   @ManyToOne
-  @JoinColumn(name="symbol",nullable=false)
+  @JoinColumn(name="stock_symbol",nullable=false)
   private StockEntity symbol;
 }

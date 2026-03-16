@@ -8,4 +8,5 @@ import com.bootcamp.project_stock_data.model.StockDTO;
 public interface StockOperator {
     @GetMapping("stock")
   StockDTO getStock(@RequestParam String symbol);
+
 }

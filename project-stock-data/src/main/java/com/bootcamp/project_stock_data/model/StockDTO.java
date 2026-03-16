@@ -2,9 +2,15 @@ package com.bootcamp.project_stock_data.model;
 
 import java.time.LocalDate;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Builder
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 
 public class StockDTO {
   private String symbol;

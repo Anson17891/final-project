@@ -11,4 +11,6 @@ import com.bootcamp.project_stock_data.entity.ProfileEntity;
 @Repository
 public interface ProfileRepository extends JpaRepository<ProfileEntity, Long>{
   Optional<ProfileEntity> findBySymbol(String symbol);
+  //List<ProfileEntity> findByIndustry(String industry);  //for extension
+
 }

@@ -33,9 +33,9 @@ public class ProfileServiceImpl implements ProfileService{
 
    //step1. get symbol ,save profileEntity (call from starter?)
   @Override
-  public void saveProfileEntities(){
+  public List<ProfileEntity> saveAllProfiles(){
       List<ProfileEntity> profiles = new ArrayList<>();
-      List<String> symbols = this.stockRepository.getAllSymbols();
+      List<String> symbols = this.stockRepository.findAllSymbols();
           for(String s: symbols){
             CompanyDTO companyDTO = this.urlManager.getCompanyDTO(s);
             ProfileEntity profileEntity = this.profileMapper.map(companyDTO,s);
@@ -43,6 +43,7 @@ public class ProfileServiceImpl implements ProfileService{
             
   }
   this.profileRepository.saveAll(profiles);
+  return profiles;
 
   }
 
@@ -55,10 +56,16 @@ public class ProfileServiceImpl implements ProfileService{
   else{
     profileEntity = this.profileRepository.findBySymbol(symbol)//
       .orElseThrow(()-> new IllegalArgumentException("symbol not found"));
-      this.redisManager.set("profile:" + symbol, profileEntity, Duration.ofSeconds(30L));
+      this.redisManager.set("profile:" + symbol, profileEntity, Duration.ofHours(24));
   
   return profileEntity;
 }
+}
+
+@Override
+public void deleteAll(){
+  this.profileRepository.deleteAll();
+  
 }
   }
   
