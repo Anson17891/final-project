@@ -27,7 +27,7 @@ public StockEntity getStock(String symbol){
   }
   else{
     stockEntity = this.stockRepository.findBySymbol(symbol)//
-                             .orElseThrow(()-> new NoSuchElementException("symbol not found"));
+                                      .orElseThrow(()-> new NoSuchElementException("symbol not found"));
       this.redisManager.set(symbol, stockEntity, Duration.ofSeconds(30L));  //ai: suggest to use application.yml to store duration time
   
   return stockEntity;

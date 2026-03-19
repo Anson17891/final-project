@@ -43,6 +43,6 @@ public class OhlcEntity {
   private Double high;
 
   @ManyToOne
-  @JoinColumn(name="stock_symbol",nullable=false)
-  private StockEntity symbol;
+  @JoinColumn(name="symbol",nullable=false)
+  private StockEntity stock;
 }

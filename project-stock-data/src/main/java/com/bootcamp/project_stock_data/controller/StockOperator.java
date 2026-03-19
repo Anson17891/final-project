@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.bootcamp.project_stock_data.model.StockDTO;
 
 public interface StockOperator {
-    @GetMapping("stock")
+    @GetMapping("/stock")
   StockDTO getStock(@RequestParam String symbol);
 
 }

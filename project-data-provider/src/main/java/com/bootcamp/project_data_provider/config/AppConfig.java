@@ -18,20 +18,7 @@ public class AppConfig {
     return new RestTemplate();
   }
 
-  @Bean
-  ObjectMapper objectMapper() {
-    return new ObjectMapper();
-  }
 
-  @Bean
-  RedisTemplate<String,String> redisTemplate(RedisConnectionFactory factory){
-    RedisTemplate<String,String> redisTemplate = new RedisTemplate<>();
-    redisTemplate.setConnectionFactory(factory);
-    redisTemplate.setKeySerializer(RedisSerializer.string());
-    redisTemplate.setValueSerializer(RedisSerializer.json());
-    redisTemplate.afterPropertiesSet();
-    return redisTemplate;
-  }
 
 
 }

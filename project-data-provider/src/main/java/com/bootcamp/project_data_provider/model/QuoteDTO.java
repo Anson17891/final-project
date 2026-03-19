@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
 @Getter
-public class StockDTO {
+public class QuoteDTO {
   @JsonProperty("c")
     private Double currentPrice;
 

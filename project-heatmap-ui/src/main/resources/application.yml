@@ -1,0 +1,10 @@
+server:
+  port: 8083
+
+stock-data:
+  domain: "http://localhost:8082"
+  datatype:
+    ohlcs: "ohlcs"
+    quotes: "quotes"
+    stock: "stock"
+    profile: "profile"

@@ -29,6 +29,7 @@ public class ProfileEntity {
   @Column(nullable=false)
   private String name;
   private String logo;
+  @Column(name = "symbol")
   private String symbol;
   @Column(name = "market_capitalization")
   private Double marketCapitalization;
@@ -44,7 +45,8 @@ public class ProfileEntity {
   private String exchange;
   private String currency;
   private LocalDate ipo;
-  @OneToOne
-@JoinColumn(name = "stock_id", referencedColumnName = "id")
-  private StockEntity stockEntity;
+  // @OneToOne
+  // @JoinColumn(name = "symbol", referencedColumnName = "symbol", nullable=false)
+  // private StockEntity stockEntity;
+
 }

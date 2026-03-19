@@ -34,7 +34,7 @@ public interface OhlcRepository extends JpaRepository<OhlcEntity, Long>{
 
 //!connect to db(created by python:_2_xxx)
 //@Query("select s from OhlcEntity s where s.symbol.symbol = :symbol order by s.tranDate desc")  //ai: Query by the symbol string field inside stockEntity
-List<OhlcEntity> findAllBySymbol_SymbolOrderByTranDateDesc(@Param("symbol") String symbol);
+List<OhlcEntity> findAllByStock_SymbolOrderByTranDateDesc(@Param("symbol") String symbol);
 
 
 }

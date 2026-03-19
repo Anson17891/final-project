@@ -7,7 +7,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.bootcamp.project_data_provider.managers.UrlManager;
 import com.bootcamp.project_data_provider.model.CompanyDTO;
-import com.bootcamp.project_data_provider.model.StockDTO;
+import com.bootcamp.project_data_provider.model.QuoteDTO;
 import com.bootcamp.project_data_provider.service.DataService;
 
 @Service
@@ -23,12 +23,12 @@ public class DataServiceImpl implements DataService{
   private String profile;
 
   @Override
-  public StockDTO getStock(String symbol){
+  public QuoteDTO getQuote(String symbol){
     String url = urlManager.generateUrl(quote, symbol);
-    StockDTO stockDTO = this.restTemplate.getForObject(url, StockDTO.class);
+    QuoteDTO quoteDTO = this.restTemplate.getForObject(url, QuoteDTO.class);
     //! in case the url doesn't work -> other source?
 
-    return stockDTO;
+    return quoteDTO;
   }
 
   @Override

@@ -7,7 +7,7 @@ import com.bootcamp.project_stock_data.model.QuoteDTO;
 
 @Component
 public class QuoteMapper {
-  public QuoteEntity map(QuoteDTO quoteDTO){
+  public QuoteEntity mapToEntity(QuoteDTO quoteDTO){
     return QuoteEntity.builder()//
                       .symbol(quoteDTO.getSymbol())//
                       .currentPrice(quoteDTO.getCurrentPrice())//
@@ -20,4 +20,19 @@ public class QuoteMapper {
                       .previousClosePrice(quoteDTO.getPreviousClosePrice())//
                       .build();
   }
+
+  public QuoteDTO mapToDTO(QuoteEntity quoteEntity){
+    return QuoteDTO.builder()//
+                      .symbol(quoteEntity.getSymbol())//
+                      .currentPrice(quoteEntity.getCurrentPrice())//
+                      .change(quoteEntity.getChange())//
+                      .percentChange(quoteEntity.getPercentChange())//
+                      .tradeVolume(quoteEntity.getTradeVolume())//
+                      .highPriceOfTheDay(quoteEntity.getHighPriceOfTheDay())//
+                      .lowPriceOfTheDay(quoteEntity.getLowPriceOfTheDay())//
+                      .openPriceOfTheDay(quoteEntity.getOpenPriceOfTheDay())//
+                      .previousClosePrice(quoteEntity.getPreviousClosePrice())//
+                      .build();
+  }
+
 }

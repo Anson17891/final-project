@@ -7,9 +7,10 @@ import java.util.List;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.stereotype.Component;
 
 import tools.jackson.databind.ObjectMapper;
-
+@Component
 public class RedisManager {
   private RedisTemplate<String, String> redisTemplate;
   private ObjectMapper objectMapper;
@@ -41,9 +42,7 @@ public class RedisManager {
     }
     try {
         return this.objectMapper.readValue(
-            json,
-
-            this.objectMapper.getTypeFactory().constructCollectionType(List.class, clazz)  //!constructCollectionType(List.class, clazz) -> List<clazz>
+            json, this.objectMapper.getTypeFactory().constructCollectionType(List.class, clazz)  //!constructCollectionType(List.class, clazz) -> List<clazz>
         );
     } catch (Exception e) {
         throw new RuntimeException("Redis deserialization failed", e);
@@ -55,4 +54,27 @@ public class RedisManager {
     String json = this.objectMapper.writeValueAsString(value);
     this.redisTemplate.opsForValue().set(key, json, duration);
   }
+
+  public <T> void setByHash(String key, String hashKey, T value, Duration duration){
+    try{
+    String json = this.objectMapper.writeValueAsString(value);
+    this.redisTemplate.opsForHash().put(key, hashKey, json);
+    this.redisTemplate.expire(key, duration);
+    }catch (Exception e){
+      throw new RuntimeException("Redis serialization failed", e);
+    }
+  }
+
+  public <T> T getByHash(String key, String hashKey, Class<T> clazz){
+    Object json = this.redisTemplate.opsForHash().get(key, hashKey);
+    if(json == null){
+      return null;
+    }
+    try {
+        return this.objectMapper.readValue(json.toString(), clazz);
+    } catch (Exception e) {
+      throw new RuntimeException("Redis deserialization failed" ,e);
+    }
+  }
+
 }

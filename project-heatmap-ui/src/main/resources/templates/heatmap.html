@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+<style>
+  #charts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .chart-container {
+    flex: 1 1 calc(50% - 20px);
+    min-width: 400px;
+    height: 500px;
+    border: 1px solid #f30505ff;
+    padding: 10px;
+    box-shadow: 0 2px 6px rgba(4, 25, 252, 0.1);
+  }
+</style>
+
+<label for="industrySelect">Select Industry:</label>
+<select id="industrySelect">
+  <option value="all">All Industries</option>
+</select>
+
+<div id="charts"></div>
+
+<script th:inline="javascript">
+  var heatmapData = [[${quotesJson}]];
+  heatmapData = JSON.parse(heatmapData);
+  console.log("Loaded heatmapData:", heatmapData);
+
+  var groupedByIndustry = {};
+
+  // Format market capitalization into readable units
+  function formatMarketCap(value) {
+    if (value >= 1e12) return (value / 1e12).toFixed(2) + "T";
+    if (value >= 1e9) return (value / 1e9).toFixed(2) + "B";
+    if (value >= 1e6) return (value / 1e6).toFixed(2) + "M";
+    if (value >= 1e3) return (value / 1e3).toFixed(2) + "K";
+    return value.toString();
+  }
+
+  // Group data by industry
+  function groupData() {
+    groupedByIndustry = {};
+    heatmapData.forEach(d => {
+      if (!groupedByIndustry[d.industry]) {
+        groupedByIndustry[d.industry] = [];
+      }
+      groupedByIndustry[d.industry].push(d);
+    });
+  }
+
+  // Initialize dropdown
+  function initSelect() {
+    var select = document.getElementById("industrySelect");
+    select.innerHTML = "<option value='all'>All Industries</option>";
+    Object.keys(groupedByIndustry).forEach(industry => {
+      var option = document.createElement("option");
+      option.value = industry;
+      option.text = industry;
+      select.appendChild(option);
+    });
+  }
+
+  // Render charts
+  function renderCharts(selectedIndustry) {
+    document.getElementById("charts").innerHTML = "";
+
+    Object.keys(groupedByIndustry).forEach(industry => {
+      if (selectedIndustry !== "all" && selectedIndustry !== industry) return;
+
+      var industryData = groupedByIndustry[industry];
+
+      // Dynamic min/max for percent change
+      var minChange = Math.min(...industryData.map(d => d.percentChange));
+      var maxChange = Math.max(...industryData.map(d => d.percentChange));
+
+      // Labels with colored percent change
+      var labelsWithChange = industryData.map(d => {
+        var color = d.percentChange >= 0 ? "green" : "red";
+        return d.symbol + " (" + 
+               "<span style='color:" + color + "'>" + 
+               d.percentChange.toFixed(2) + "%</span>)";
+      });
+
+      var data = [{
+        type: "treemap",
+        labels: industryData.map(d => d.symbol),
+        parents: industryData.map(d => industry),
+        values: industryData.map(d => d.marketCapitalization),
+        marker: {
+          colors: industryData.map(d => d.percentChange),
+          colorscale: [
+            [0, "red"],
+            [0.5, "lightgray"],
+            [1, "green"]
+          ],
+          cmin: minChange,
+          cmax: maxChange,
+          colorbar: { title: "Percent Change (%)" }
+        },
+        text: industryData.map(d => d.percentChange.toFixed(2) + "%"),
+        textinfo: "label+text+value+percent parent",
+        hovertext: industryData.map(d =>
+          "Company: " + d.name +
+          "<br>Price: $" + d.price +
+          "<br>Change: " + d.priceChange +
+          "<br>Percent Change: " + d.percentChange + "%" +
+          "<br>Market Cap: " + formatMarketCap(d.marketCapitalization) +
+          "<br>IPO Date: " + d.ipo +
+          "<br>Shares Outstanding: " + d.shareOutstanding +
+          "<br><a href='" + d.webUrl + "' target='_blank'>Website</a>"
+        ),
+        hoverinfo: "text"
+      }];
+
+      var layout = {
+        title: industry + " Industry Heatmap (Size=Market Cap, Color=Percent Change)",
+        hoverlabel: { bgcolor: "#02c8ffff", font: { color: "#00ffaaff" } }
+      };
+
+      var div = document.createElement("div");
+      div.className = "chart-container";
+      div.id = "heatmap_" + industry;
+      document.getElementById("charts").appendChild(div);
+
+      Plotly.newPlot(div.id, data, layout);
+
+      div.on('plotly_click', function(eventData){
+        var stock = eventData.points[0].label;
+        var industryName = eventData.points[0].parent;
+        window.location.href = "candlestick.html?stock=" + stock + "&industry=" + industryName;
+      });
+    });
+  }
+
+  // Initial load
+  groupData();
+  initSelect();
+  renderCharts("all");
+
+  document.getElementById("industrySelect").addEventListener("change", function() {
+    renderCharts(this.value);
+  });
+
+  // Auto refresh every 30 seconds
+  setInterval(async function() {
+    try {
+      const response = await fetch("/api/heatmap"); // Replace with your API endpoint
+      heatmapData = await response.json();
+
+      groupData();
+      initSelect();
+      renderCharts(document.getElementById("industrySelect").value);
+    } catch (error) {
+      console.error("Failed to update data:", error);
+    }
+  }, 30000);
+</script>
+</body>
+</html>

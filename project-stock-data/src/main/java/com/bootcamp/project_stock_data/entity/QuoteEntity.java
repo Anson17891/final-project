@@ -2,8 +2,6 @@ package com.bootcamp.project_stock_data.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -19,12 +17,12 @@ import lombok.NoArgsConstructor;
 @Builder
 public class QuoteEntity {
   @Id
-  @GeneratedValue(strategy=GenerationType.IDENTITY)
-  private Long id;
+  // @GeneratedValue(strategy=GenerationType.IDENTITY)
+  // private Long id;
     private String symbol;
   @Column(name="current_price", nullable=false)
   private Double currentPrice;
-    @Column(name="change", nullable=false)
+    @Column(name="price_change", nullable=false)
   private Double change;
     @Column(name="percent_change", nullable=false)
   private Double percentChange;

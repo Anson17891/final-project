@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5532/bootcamp_2510p
+    url: jdbc:postgresql://localhost:5432/bootcamp_2510p
     username: postgres
     password: Admin1234
   jpa:
@@ -12,12 +12,13 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect   # tell hibernate to use postgreSQL dialect
     open-in-view: false
 
   data:
     redis:
       host: localhost
-      port: 6479
+      port: 6379
   
 app:
   provider:
@@ -25,8 +26,6 @@ app:
     datatype:
       profile: company
       quote: quote
-  cache:
-    company-ttl-hours: 24
 
 
 management:

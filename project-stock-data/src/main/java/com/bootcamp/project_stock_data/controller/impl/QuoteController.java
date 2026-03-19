@@ -5,20 +5,27 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bootcamp.project_stock_data.codeLib.RedisManager;
 import com.bootcamp.project_stock_data.controller.QuoteOperator;
+import com.bootcamp.project_stock_data.mapper.QuoteMapper;
 import com.bootcamp.project_stock_data.model.QuoteDTO;
+import com.bootcamp.project_stock_data.service.QuoteService;
 
 
 @RestController
 public class QuoteController implements QuoteOperator{
+  // @Autowired
+  // private RedisManager redisManager;
   @Autowired
-  private RedisManager redisManager;
+  private QuoteService quoteService;
+  @Autowired
+  private QuoteMapper quoteMapper;
   
   @Override
   public List<QuoteDTO> getQuotes(){
-    List<QuoteDTO> quotes = this.redisManager.getList("quotes:all",QuoteDTO.class);
-    return quotes != null? quotes : List.of(); //!ai: prevent redis return null
+    return this.quoteService.findAll().stream()//
+                                      .map(e -> this.quoteMapper.mapToDTO(e))//
+                                      .toList();
+
   }
   
 }

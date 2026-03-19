@@ -31,7 +31,7 @@ private RedisManager redisManager;
     return ohlcs;
   }
   else{
-    ohlcs = this.ohlcRepository.findAllBySymbol_SymbolOrderByTranDateDesc(symbol);
+    ohlcs = this.ohlcRepository.findAllByStock_SymbolOrderByTranDateDesc(symbol);
       this.redisManager.set("ohlc:" + symbol, ohlcs, Duration.ofSeconds(30L));
   
   return ohlcs;

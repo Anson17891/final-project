@@ -10,7 +10,7 @@ import com.bootcamp.project_stock_data.model.OhlcDTO;
 public class OhlcMapper {
   public OhlcDTO map(OhlcEntity ohlcEntity){
     return OhlcDTO.builder()//
-                  .symbol(ohlcEntity.getSymbol().getSymbol())//
+                  .symbol(ohlcEntity.getStock().getSymbol())//
                   .open(ohlcEntity.getOpen())//
                   .close(ohlcEntity.getClose())//
                   .volume(ohlcEntity.getVolume())//

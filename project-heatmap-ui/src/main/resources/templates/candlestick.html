@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+  <div id="candlestick"></div>
+  <script>
+    // 從 URL 取得股票代碼
+    const urlParams = new URLSearchParams(window.location.search);
+    const stock = urlParams.get('stock');
+
+    // 模擬不同股票的資料 (實際應該從 API 取得)
+    var stockData = {
+      'AAPL': {x:['2026-03-14','2026-03-15'], open:[150,152], high:[155,158], low:[148,150], close:[153,157]},
+      'TSLA': {x:['2026-03-14','2026-03-15'], open:[700,710], high:[720,730], low:[690,705], close:[715,725]},
+      'JPM':  {x:['2026-03-14','2026-03-15'], open:[120,122], high:[125,128], low:[118,119], close:[123,126]}
+    };
+
+    var data = [{
+      x: stockData[stock].x,
+      open: stockData[stock].open,
+      high: stockData[stock].high,
+      low: stockData[stock].low,
+      close: stockData[stock].close,
+      type: 'candlestick'
+    }];
+
+    Plotly.newPlot('candlestick', data, {title: stock + " K 線圖"});
+  </script>
+</body>
+</html>
