@@ -3,7 +3,6 @@ package com.bootcamp.project_stock_data.model;
 import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 
 public class OhlcDTO {
-  @JsonProperty("tran_date")
+  // @JsonProperty("tran_date")
   @JsonFormat(pattern = "yyyy-MM-dd")
   private LocalDate tranDate;
   private String symbol;
