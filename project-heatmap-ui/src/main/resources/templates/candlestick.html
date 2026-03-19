@@ -1,32 +1,160 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
+  <meta charset="UTF-8">
+  <title>Candlestick Chart</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #121212;
+      color: #e0e0e0;            
+    }
+    .container {
+      display: flex;
+      gap: 20px; 
+    }
+    #candlestick {
+      flex: 3; 
+      height: 600px;
+    }
+    #companyInfo {
+      flex: 1; 
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background-color: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5); 
+    }
+    #companyInfo img {
+      height: 60px;
+      width: 60px;          
+      object-fit: contain;  
+      border-radius: 8px;   
+      background-color: #fff; 
+      padding: 5px;
+    }
+    #companyInfo div {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    #companyInfo strong {
+      color: #ffffff;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 15px;
+      font-size: 14px;
+      cursor: pointer;
+      background-color: #333333;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #555555;
+    }
+  </style>
 </head>
 <body>
-  <div id="candlestick"></div>
-  <script>
-    // 從 URL 取得股票代碼
-    const urlParams = new URLSearchParams(window.location.search);
-    const stock = urlParams.get('stock');
+  <div class="container">
+    <div id="candlestick"></div>
+    <div id="companyInfo"></div>
+  </div>
 
-    // 模擬不同股票的資料 (實際應該從 API 取得)
-    var stockData = {
-      'AAPL': {x:['2026-03-14','2026-03-15'], open:[150,152], high:[155,158], low:[148,150], close:[153,157]},
-      'TSLA': {x:['2026-03-14','2026-03-15'], open:[700,710], high:[720,730], low:[690,705], close:[715,725]},
-      'JPM':  {x:['2026-03-14','2026-03-15'], open:[120,122], high:[125,128], low:[118,119], close:[123,126]}
-    };
+  <script th:inline="javascript">
+    const dto = JSON.parse([[${ohlcJson}]]);
+    const ohlc = dto.ohlcs;
 
-    var data = [{
-      x: stockData[stock].x,
-      open: stockData[stock].open,
-      high: stockData[stock].high,
-      low: stockData[stock].low,
-      close: stockData[stock].close,
-      type: 'candlestick'
+    function formatMarketCap(value) {
+      if (value >= 1e12) return (value / 1e12).toFixed(2) + "T";
+      if (value >= 1e9) return (value / 1e9).toFixed(2) + "B";
+      if (value >= 1e6) return (value / 1e6).toFixed(2) + "M";
+      if (value >= 1e3) return (value / 1e3).toFixed(2) + "K";
+      return value.toString();
+    }
+
+    const data = [{
+      x: ohlc.map(item => item.tranDate),
+      open: ohlc.map(item => item.open),
+      high: ohlc.map(item => item.high),
+      low: ohlc.map(item => item.low),
+      close: ohlc.map(item => item.close),
+      type: 'candlestick',
+      hovertemplate:
+        'Trade date: %{x}<br>' +
+        'Open: %{open}<br>' +
+        'Close: %{close}<br>' +
+        'High: %{high}<br>' +
+        'Low: %{low}<br>' +
+        'volume: %{text}<extra></extra>',
+      text: ohlc.map(item => item.volume)
     }];
 
-    Plotly.newPlot('candlestick', data, {title: stock + " K 線圖"});
+    const layout = {
+      xaxis: { title: "Trade date",
+      color: "#e0e0e0",
+      rangeslider: { visible: true },
+      rangeselector: {
+      buttons: [
+        {
+          count: 1,
+          label: "1m",
+          step: "month",
+          stepmode: "backward"
+        },
+        {
+          count: 6,
+          label: "6m",
+          step: "month",
+          stepmode: "backward"
+        },
+        {
+          count: 1,
+          label: "YTD",
+          step: "year",
+          stepmode: "todate"
+        },
+        {
+          count: 1,
+          label: "1y",
+          step: "year",
+          stepmode: "backward"
+        },
+        {
+          step: "all",
+          label: "All"
+        }
+      ],
+      bgcolor: "#333333",     // background color of buttons
+      activecolor: "#ff9800", // color when button is active/selected
+      font: { color: "#ffffff" } // text color
+
+    }
+  },
+      yaxis: { title: "Price ($)", color: "#e0e0e0" },
+      paper_bgcolor: "#121212",
+      plot_bgcolor: "#121212",
+      font: { color: "#e0e0e0" },
+      hoverlabel: { bgcolor: "#333333", font: { color: "#ffffff" },
+      dragmode: "zoom"
+  }
+    };
+
+    // show company info
+    document.getElementById("companyInfo").innerHTML = `
+      <img src="${dto.logo}" alt="logo">
+      <div><strong>Company name:</strong> ${dto.name}</div>
+      <div><strong>Stock symbol:</strong> ${dto.symbol}</div>
+      <div><strong>Market Capitalization:</strong> ${formatMarketCap(dto.marketCapitalization)}</div>
+      <div><strong>Industry:</strong> ${dto.industry}</div>
+      <div><strong>Share Outstanding:</strong> ${dto.shareOutstanding}</div>
+    `;
+
+    Plotly.newPlot('candlestick', data, layout);
   </script>
 </body>
 </html>

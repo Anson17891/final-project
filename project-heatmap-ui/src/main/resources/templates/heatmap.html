@@ -1,40 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <link rel="stylesheet" href="/css/heatmapStyle.css">
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-<style>
-  #charts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-  .chart-container {
-    flex: 1 1 calc(50% - 20px);
-    min-width: 400px;
-    height: 500px;
-    border: 1px solid #f30505ff;
-    padding: 10px;
-    box-shadow: 0 2px 6px rgba(4, 25, 252, 0.1);
-  }
-</style>
 
-<label for="industrySelect">Select Industry:</label>
-<select id="industrySelect">
-  <option value="all">All Industries</option>
-</select>
+<div id="stockModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <iframe id="modalFrame" src="" style="width:100%; height:600px; border:none;"></iframe>
+  </div>
+</div>
 
-<div id="charts"></div>
+<div style="margin:10px;">
+  <input type="text" id="symbolSearch" placeholder="Enter stock symbol" />
+  <button id="searchBtn">Search</button>
+</div>
+
+
+
+  
+<div id="chart"></div>
 
 <script th:inline="javascript">
-  var heatmapData = [[${quotesJson}]];
+  let heatmapData = [[${quotesJson}]];
   heatmapData = JSON.parse(heatmapData);
-  console.log("Loaded heatmapData:", heatmapData);
 
-  var groupedByIndustry = {};
+  
 
-  // Format market capitalization into readable units
   function formatMarketCap(value) {
     if (value >= 1e12) return (value / 1e12).toFixed(2) + "T";
     if (value >= 1e9) return (value / 1e9).toFixed(2) + "B";
@@ -43,123 +37,188 @@
     return value.toString();
   }
 
-  // Group data by industry
-  function groupData() {
-    groupedByIndustry = {};
-    heatmapData.forEach(d => {
-      if (!groupedByIndustry[d.industry]) {
-        groupedByIndustry[d.industry] = [];
-      }
-      groupedByIndustry[d.industry].push(d);
-    });
+  function dynamicFontSize() {
+    return Math.max(12, Math.min(24, window.innerWidth / 100));
   }
 
-  // Initialize dropdown
-  function initSelect() {
-    var select = document.getElementById("industrySelect");
-    select.innerHTML = "<option value='all'>All Industries</option>";
-    Object.keys(groupedByIndustry).forEach(industry => {
-      var option = document.createElement("option");
-      option.value = industry;
-      option.text = industry;
-      select.appendChild(option);
+  function renderHeatmap(data) {
+    const globalMinChange = Math.min(...data.map(d => d.percentChange));
+    const globalMaxChange = Math.max(...data.map(d => d.percentChange));
+
+    const maxAbsChange = Math.max(Math.abs(globalMinChange), Math.abs(globalMaxChange));
+
+
+    let labels = [];
+    let parents = [];
+    let values = [];
+    let colors = [];
+    let texts = [];
+    let hovertexts = [];
+
+    const industries = [...new Set(data.map(d => d.industry))];
+    industries.forEach(ind => {
+      labels.push(ind);
+      parents.push("");
+      values.push(
+        data.filter(d => d.industry === ind)
+            .reduce((sum, d) => sum + d.marketCapitalization, 0)
+      );
+      colors.push(null);
+      texts.push("");
+      hovertexts.push("Industry: " + ind);
+
     });
+
+    data.forEach(d => {
+      labels.push(d.symbol);
+      parents.push(d.industry);
+      values.push(d.marketCapitalization);
+      colors.push(d.percentChange);
+
+      const arrow = d.percentChange >= 0
+        ? "<span style='color:#22ff00ff'>▲ " + d.percentChange.toFixed(2) + "%</span>"
+        : "<span style='color:#ff0000ff'>▼ " + d.percentChange.toFixed(2) + "%</span>";
+
+      texts.push(`${d.symbol}<br>$${d.price.toFixed(2)}<br>${arrow}`);
+
+      hovertexts.push(
+        `Company: ${d.name}<br>` +
+        `Industry: ${d.industry}<br>` +
+        `Price: $${d.price.toFixed(2)}<br>` +
+        `Change: ${d.priceChange.toFixed(2)}<br>` +
+        `Percent Change: ${d.percentChange.toFixed(2)}%<br>` +
+        `Market Cap: ${formatMarketCap(d.marketCapitalization)}<br>` +
+        `IPO Date: ${d.ipo}<br>` +
+        `Shares Outstanding: ${d.shareOutstanding}<br>` +
+        `<a href='${d.webUrl}' target='_blank'>Website</a>`
+      );
+
+    });
+
+    const plotData = [{
+      type: "treemap",
+      labels,
+      parents,
+      values,
+      branchvalues: "total",
+      marker: {
+        colors,
+        colorscale: [
+          [0, "#ff0000ff"],
+          [0.5, "#797979ff"],
+          [1, "#22ff00ff"]
+        ],
+        cmin: -maxAbsChange,
+        cmax: maxAbsChange,
+        colorbar: {
+          title: "Percent Change (%)",
+          tickfont: { color: "#ffffffff" },
+          titlefont: { color: "#ffffff" }
+        }
+      },
+      text: texts,
+      textinfo: "text",
+      hovertext: hovertexts,
+      hoverinfo: "text",
+      textfont: { size: dynamicFontSize() },
+      tiling: { pad: 5 }
+    }];
+
+    const layout = {
+      autosize: true,
+      margin: { t: 0, l: 0, r: 0, b: 0 },
+      paper_bgcolor: "#5a5959ff",
+      plot_bgcolor: "#5a5959ff",
+      hoverlabel: { bgcolor: "#333333", font: { color: "#ffffff" } },
+      uniformtext: { minsize: dynamicFontSize() , mode: "hide" }
+    };
+
+    Plotly.react("chart", plotData, layout, { staticPlot: true });
+
   }
 
-  // Render charts
-  function renderCharts(selectedIndustry) {
-    document.getElementById("charts").innerHTML = "";
-
-    Object.keys(groupedByIndustry).forEach(industry => {
-      if (selectedIndustry !== "all" && selectedIndustry !== industry) return;
-
-      var industryData = groupedByIndustry[industry];
-
-      // Dynamic min/max for percent change
-      var minChange = Math.min(...industryData.map(d => d.percentChange));
-      var maxChange = Math.max(...industryData.map(d => d.percentChange));
-
-      // Labels with colored percent change
-      var labelsWithChange = industryData.map(d => {
-        var color = d.percentChange >= 0 ? "green" : "red";
-        return d.symbol + " (" + 
-               "<span style='color:" + color + "'>" + 
-               d.percentChange.toFixed(2) + "%</span>)";
-      });
-
-      var data = [{
-        type: "treemap",
-        labels: industryData.map(d => d.symbol),
-        parents: industryData.map(d => industry),
-        values: industryData.map(d => d.marketCapitalization),
-        marker: {
-          colors: industryData.map(d => d.percentChange),
-          colorscale: [
-            [0, "red"],
-            [0.5, "lightgray"],
-            [1, "green"]
-          ],
-          cmin: minChange,
-          cmax: maxChange,
-          colorbar: { title: "Percent Change (%)" }
-        },
-        text: industryData.map(d => d.percentChange.toFixed(2) + "%"),
-        textinfo: "label+text+value+percent parent",
-        hovertext: industryData.map(d =>
-          "Company: " + d.name +
-          "<br>Price: $" + d.price +
-          "<br>Change: " + d.priceChange +
-          "<br>Percent Change: " + d.percentChange + "%" +
-          "<br>Market Cap: " + formatMarketCap(d.marketCapitalization) +
-          "<br>IPO Date: " + d.ipo +
-          "<br>Shares Outstanding: " + d.shareOutstanding +
-          "<br><a href='" + d.webUrl + "' target='_blank'>Website</a>"
-        ),
-        hoverinfo: "text"
-      }];
-
-      var layout = {
-        title: industry + " Industry Heatmap (Size=Market Cap, Color=Percent Change)",
-        hoverlabel: { bgcolor: "#02c8ffff", font: { color: "#00ffaaff" } }
-      };
-
-      var div = document.createElement("div");
-      div.className = "chart-container";
-      div.id = "heatmap_" + industry;
-      document.getElementById("charts").appendChild(div);
-
-      Plotly.newPlot(div.id, data, layout);
-
-      div.on('plotly_click', function(eventData){
-        var stock = eventData.points[0].label;
-        var industryName = eventData.points[0].parent;
-        window.location.href = "candlestick.html?stock=" + stock + "&industry=" + industryName;
-      });
-    });
-  }
-
-  // Initial load
-  groupData();
-  initSelect();
-  renderCharts("all");
-
-  document.getElementById("industrySelect").addEventListener("change", function() {
-    renderCharts(this.value);
-  });
-
-  // Auto refresh every 30 seconds
-  setInterval(async function() {
+  async function loadHeatmap() {
     try {
-      const response = await fetch("/api/heatmap"); // Replace with your API endpoint
-      heatmapData = await response.json();
-
-      groupData();
-      initSelect();
-      renderCharts(document.getElementById("industrySelect").value);
+      const response = await fetch("/api/heatmap");
+      const newData = await response.json();
+      renderHeatmap(newData);
     } catch (error) {
-      console.error("Failed to update data:", error);
+      console.error("Failed to load heatmap:", error);
     }
-  }, 30000);
+  }
+
+  // Initial render
+  renderHeatmap(heatmapData);
+
+  // Auto update every 30s
+  setInterval(loadHeatmap, 30000);
+
+  // Resize handler
+  window.onresize = () => Plotly.Plots.resize(document.getElementById("chart"));
+
+  // Click handler
+document.getElementById("chart").on('plotly_click', function(eventData) {
+
+  
+  const stock = eventData.points[0].label;
+  const industryName = eventData.points[0].parent;
+
+  if (industryName) {
+    const modal = document.getElementById("stockModal");
+    const frame = document.getElementById("modalFrame");
+
+    // Load the OHLC page inside the modal
+    frame.src = "/data/ohlc?symbol=" + encodeURIComponent(stock);
+
+    // Show modal
+    modal.style.display = "block";
+
+    // Close button
+    document.querySelector(".close").onclick = () => {
+      modal.style.display = "none";
+      frame.src = ""; // clear frame when closing
+    };
+
+    // Close when clicking outside
+    window.onclick = (event) => {
+      if (event.target === modal) {
+        modal.style.display = "none";
+        frame.src = "";
+      }
+    };
+  }
+});
+
+// Search button handler
+document.getElementById("searchBtn").onclick = () => {
+  const symbol = document.getElementById("symbolSearch").value.trim();
+  if (symbol) {
+    const modal = document.getElementById("stockModal");
+    const frame = document.getElementById("modalFrame");
+
+    // Load candlestick plot page for the symbol
+    frame.src = "/data/ohlc?symbol=" + encodeURIComponent(symbol);
+
+    // Show modal
+    modal.style.display = "block";
+
+    // Close button
+    document.querySelector(".close").onclick = () => {
+      modal.style.display = "none";
+      frame.src = "";
+    };
+
+    // Close when clicking outside
+    window.onclick = (evt) => {
+      if (evt.target === modal) {
+        modal.style.display = "none";
+        frame.src = "";
+      }
+    };
+  }
+};
+
+
 </script>
 </body>
 </html>
