@@ -19,6 +19,7 @@ public class OhlcDto {
   private String industry;
   private Double shareOutstanding;
   private String logo;
+  private String weburl;
   private List<Ohlc> ohlcs;
 
 @Data
@@ -87,6 +88,7 @@ public class OhlcDto {
       private String industry;
       private Double shareOutstanding;
       private String logo;
+      private String weburl;
       private List<Ohlc> ohlcs;
       OhlcDtoBuilder() {
       }
@@ -118,8 +120,12 @@ public class OhlcDto {
          this.ohlcs = ohlcs;
          return this;
       }
+      public OhlcDtoBuilder weburl(final String weburl){
+         this.weburl = weburl;
+         return this;
+      }
       public OhlcDto build() {
-         return new OhlcDto(this.symbol, this.name, this.marketCapitalization, this.industry, this.shareOutstanding, this.logo, this.ohlcs);
+         return new OhlcDto(this.symbol, this.name, this.marketCapitalization, this.industry, this.shareOutstanding, this.logo,this.weburl, this.ohlcs);
       }
    }
 

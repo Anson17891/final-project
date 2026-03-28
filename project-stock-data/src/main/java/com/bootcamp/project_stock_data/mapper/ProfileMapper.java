@@ -21,7 +21,7 @@ public class ProfileMapper {
     return ProfileEntity.builder()//
                         .name(companyDTO.getName())//
                         .logo(companyDTO.getLogo())//
-                        .symbol(companyDTO.getSymbol())//
+                        .symbol(symbol)//
                         .marketCapitalization(companyDTO.getMarketCapitalization())//
                         .shareOutstanding(companyDTO.getShareOutstanding())//
                         .industry(companyDTO.getIndustry())//

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html>
 <head>
   <meta charset="UTF-8">
   <title>Candlestick Chart</title>
@@ -77,12 +77,14 @@
       return value.toString();
     }
 
+    
     const data = [{
       x: ohlc.map(item => item.tranDate),
       open: ohlc.map(item => item.open),
       high: ohlc.map(item => item.high),
       low: ohlc.map(item => item.low),
       close: ohlc.map(item => item.close),
+      volume: ohlc.map(item => Math.round(item.volume/1000000).toString() + "M"),
       type: 'candlestick',
       hovertemplate:
         'Trade date: %{x}<br>' +
@@ -90,8 +92,7 @@
         'Close: %{close}<br>' +
         'High: %{high}<br>' +
         'Low: %{low}<br>' +
-        'volume: %{text}<extra></extra>',
-      text: ohlc.map(item => item.volume)
+        'Volume: %{volume}<extra></extra>'
     }];
 
     const layout = {
@@ -152,7 +153,12 @@
       <div><strong>Market Capitalization:</strong> ${formatMarketCap(dto.marketCapitalization)}</div>
       <div><strong>Industry:</strong> ${dto.industry}</div>
       <div><strong>Share Outstanding:</strong> ${dto.shareOutstanding}</div>
-    `;
+      <div>
+  <strong>Web url:</strong> 
+  <a href="${dto.weburl}" target="_blank" style="color:#64b5f6;">
+    ${dto.weburl}
+  </a>
+</div>`;
 
     Plotly.newPlot('candlestick', data, layout);
   </script>

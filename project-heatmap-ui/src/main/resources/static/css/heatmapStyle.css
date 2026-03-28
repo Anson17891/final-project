@@ -1,14 +1,18 @@
 body {
   background-color: #5a5959ff;
   margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 #chart {
   width: 100vw;
-  height: 80vh;
+  height: 90vh;
   padding: 10px;
   box-shadow: 0 2px 6px rgba(4, 25, 252, 0.1);
   box-sizing: border-box;
+  margin: 0 auto;
+
 }
 
 #chart .js-plotly-plot .slice { cursor: pointer; }
@@ -52,4 +56,13 @@ body {
 }
 .close:hover {
   color: #fff;
+}
+
+#lastUpdated {
+  position: absolute;   /* take it out of normal flow */
+  top: 10px;            /* distance from top */
+  right: 20px;          /* distance from right */
+  color: #ffffff;       /* white text */
+  font-size: 14px;      /* readable size */
+  font-style: italic;   /* optional styling */
 }

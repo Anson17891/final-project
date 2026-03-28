@@ -48,6 +48,9 @@ public List<ProfileEntity> saveAllProfiles() throws InterruptedException {
     int uploadCounter = 0;
 
     for (String s : symbols) {
+      //Testing
+      System.out.println(s + "-is processing");
+
         rateLimiter.acquire();
 
         try {
@@ -56,6 +59,8 @@ public List<ProfileEntity> saveAllProfiles() throws InterruptedException {
 
                 ProfileEntity profileEntity = this.profileMapper.mapToEntity(companyDTO, s);
                 profiles.add(profileEntity);
+//Testing
+System.out.println(profileEntity.getSymbol() + "-is added");
             }
         } catch (HttpClientErrorException.TooManyRequests e) {
             System.out.println("API limit reached, pausing for 1 minute...");

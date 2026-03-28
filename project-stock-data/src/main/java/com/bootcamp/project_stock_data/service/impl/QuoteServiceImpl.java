@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import com.bootcamp.project_stock_data.codeLib.RedisManager;
 import com.bootcamp.project_stock_data.entity.QuoteEntity;
@@ -60,7 +61,10 @@ private UrlManager urlManager;
       try {
           QuoteDTO quoteDTO = this.urlManager.getQuoteDTO(s);
           batch.add(quoteDTO);
-      } catch (Exception e) {
+      }catch (HttpClientErrorException.TooManyRequests e) {
+            System.out.println("API limit reached, pausing for 1 minute...");
+            Thread.sleep(60_000);
+        }  catch (Exception e) {
         System.out.println("Failed to get quote from symbol:" + s);
       }
     }

@@ -36,6 +36,7 @@ public class OhlcMapper {
                   .industry(profileDTO.getIndustry())//
                   .shareOutstanding((profileDTO.getShareOutstanding()))//
                   .logo(profileDTO.getLogo())//
+                  .weburl(profileDTO.getWeburl())//
                   .ohlcs(ohlcs)//
                   .build();
   }

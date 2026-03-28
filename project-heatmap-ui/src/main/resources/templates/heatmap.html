@@ -14,10 +14,16 @@
 </div>
 
 <div style="margin:10px;">
-  <input type="text" id="symbolSearch" placeholder="Enter stock symbol" />
+  <input type="text" id="symbolSearch" list="symbolList" placeholder="Enter stock symbol" />
+  <datalist id="symbolList"></datalist>
   <button id="searchBtn">Search</button>
 </div>
 
+
+<div id="lastUpdated" style="margin:10px; color:#ffffff; font-size:14px;">
+  Last updated: never
+</div>
+<div id="chart"></div>
 
 
   
@@ -27,7 +33,16 @@
   let heatmapData = [[${quotesJson}]];
   heatmapData = JSON.parse(heatmapData);
 
+    // create symbol list
+  const symbols = heatmapData.map(d => d.symbol).sort();
+  const datalist = document.getElementById("symbolList");
+  symbols.forEach(sym => {
+    const option = document.createElement("option");
+    option.value = sym;
+    datalist.appendChild(option);
+  });
   
+
 
   function formatMarketCap(value) {
     if (value >= 1e12) return (value / 1e12).toFixed(2) + "T";
@@ -38,113 +53,124 @@
   }
 
   function dynamicFontSize() {
-    return Math.max(12, Math.min(24, window.innerWidth / 100));
+    return Math.max(10, Math.min(24, window.innerWidth / 100));
   }
 
-  function renderHeatmap(data) {
-    const globalMinChange = Math.min(...data.map(d => d.percentChange));
-    const globalMaxChange = Math.max(...data.map(d => d.percentChange));
-
-    const maxAbsChange = Math.max(Math.abs(globalMinChange), Math.abs(globalMaxChange));
+function renderHeatmap(data) {
 
 
-    let labels = [];
-    let parents = [];
-    let values = [];
-    let colors = [];
-    let texts = [];
-    let hovertexts = [];
+  let labels = [], parents = [], values = [], colors = [], texts = [], hovertexts = [];
 
-    const industries = [...new Set(data.map(d => d.industry))];
-    industries.forEach(ind => {
-      labels.push(ind);
-      parents.push("");
-      values.push(
-        data.filter(d => d.industry === ind)
-            .reduce((sum, d) => sum + d.marketCapitalization, 0)
-      );
-      colors.push(null);
-      texts.push("");
-      hovertexts.push("Industry: " + ind);
+  const industries = [...new Set(data.map(d => d.industry))];
+  industries.forEach(ind => {
+    labels.push(ind);
+    parents.push("");
+    values.push(
+      data.filter(d => d.industry === ind)
+          .reduce((sum, d) => sum + d.marketCapitalization, 0)
+    );
+    colors.push(null);
+    texts.push("");
+    hovertexts.push("Industry: " + ind);
+  });
 
-    });
+  data.forEach(d => {
+    labels.push(d.symbol);
+    parents.push(d.industry);
+    values.push(d.marketCapitalization);
+    colors.push(d.percentChange);
 
-    data.forEach(d => {
-      labels.push(d.symbol);
-      parents.push(d.industry);
-      values.push(d.marketCapitalization);
-      colors.push(d.percentChange);
-
+    let blockText = "";
+    if (d.marketCapitalization > 1e5) {
       const arrow = d.percentChange >= 0
-        ? "<span style='color:#22ff00ff'>▲ " + d.percentChange.toFixed(2) + "%</span>"
-        : "<span style='color:#ff0000ff'>▼ " + d.percentChange.toFixed(2) + "%</span>";
+        ? "<span style='color:#22ff00ff; text-shadow:1px 1px 2px #00000064;'>▲ " + d.percentChange.toFixed(2) + "%</span>"
+        : "<span style='color:#ff0000ff; text-shadow:1px 1px 2px #00000064;'>▼ " + d.percentChange.toFixed(2) + "%</span>";
+      blockText = `${d.symbol}<br>$${d.price.toFixed(2)}<br>${arrow}`;
+    } else if (d.marketCapitalization > 1e3) {
+      blockText = d.symbol;
+    }
+    texts.push(blockText);
 
-      texts.push(`${d.symbol}<br>$${d.price.toFixed(2)}<br>${arrow}`);
+    hovertexts.push(
+      `Company: ${d.name}<br>` +
+      `Industry: ${d.industry}<br>` +
+      `Price: $${d.price.toFixed(2)}<br>` +
+      `Change: ${d.priceChange.toFixed(2)}<br>` +
+      `Percent Change: ${d.percentChange.toFixed(2)}%<br>` +
+      `Market Cap: ${formatMarketCap(d.marketCapitalization)}<br>` +
+      `IPO Date: ${d.ipo}<br>` +
+      `Shares Outstanding: ${d.shareOutstanding}<br>`
+    );
+  });
 
-      hovertexts.push(
-        `Company: ${d.name}<br>` +
-        `Industry: ${d.industry}<br>` +
-        `Price: $${d.price.toFixed(2)}<br>` +
-        `Change: ${d.priceChange.toFixed(2)}<br>` +
-        `Percent Change: ${d.percentChange.toFixed(2)}%<br>` +
-        `Market Cap: ${formatMarketCap(d.marketCapitalization)}<br>` +
-        `IPO Date: ${d.ipo}<br>` +
-        `Shares Outstanding: ${d.shareOutstanding}<br>` +
-        `<a href='${d.webUrl}' target='_blank'>Website</a>`
-      );
+  const plotData = [{
+    type: "treemap",
+    labels, parents, values,
+    maxdepth: 2,
+    branchvalues: "total",
+    root: { color: "#000000" },
+    marker: {
+      colors,
+      colorscale: [
+        [0, "#ff0000ff"],
+        [0.5, "#797979ff"],
+        [1, "#22ff00ff"]
+      ],
+      cmin: -6,
+      cmax: 6,
+      colorbar: {
+        title: "Percent Change (%)",
+        tickfont: { color: "#ffffffff" },
+        titlefont: { color: "#ffffff" }
+      }
+    },
+    text: texts,
+    textinfo: "text",
+    hovertext: hovertexts,
+    hoverinfo: "text",
+    textfont: { size: dynamicFontSize(), color: "#ffffff" },
+    tiling: { pad: 5 }
+  }];
 
-    });
+  const layout = {
+    xaxis: { fixedrange: true },
+    yaxis: { fixedrange: true },
+    autosize: true,
+    margin: { t: 0, l: 0, r: 0, b: 0 },
+    paper_bgcolor: "#5a5959ff",
+    plot_bgcolor: "#5a5959ff",
+    hoverlabel: { bgcolor: "#333333", font: { color: "#ffffff" } },
+    uniformtext: { minsize: dynamicFontSize() }
+  };
 
-    const plotData = [{
-      type: "treemap",
-      labels,
-      parents,
-      values,
-      branchvalues: "total",
-      marker: {
-        colors,
-        colorscale: [
-          [0, "#ff0000ff"],
-          [0.5, "#797979ff"],
-          [1, "#22ff00ff"]
-        ],
-        cmin: -maxAbsChange,
-        cmax: maxAbsChange,
-        colorbar: {
-          title: "Percent Change (%)",
-          tickfont: { color: "#ffffffff" },
-          titlefont: { color: "#ffffff" }
-        }
-      },
-      text: texts,
-      textinfo: "text",
-      hovertext: hovertexts,
-      hoverinfo: "text",
-      textfont: { size: dynamicFontSize() },
-      tiling: { pad: 5 }
-    }];
+  const chartDiv = document.getElementById("chart");
+  const currentLayout = chartDiv.layout ? JSON.parse(JSON.stringify(chartDiv.layout)) : null;
 
-    const layout = {
-      autosize: true,
-      margin: { t: 0, l: 0, r: 0, b: 0 },
-      paper_bgcolor: "#5a5959ff",
-      plot_bgcolor: "#5a5959ff",
-      hoverlabel: { bgcolor: "#333333", font: { color: "#ffffff" } },
-      uniformtext: { minsize: dynamicFontSize() , mode: "hide" }
-    };
-
-    Plotly.react("chart", plotData, layout, { staticPlot: true });
-
-  }
+  Plotly.react("chart", plotData, layout, {
+    staticPlot: true,
+    scrollZoom: false,
+    doubleClick: false,
+    displayModeBar: false
+  }).then(() => {
+    if (currentLayout) {
+      Plotly.relayout("chart", currentLayout);
+    }
+  });
+}
 
   async function loadHeatmap() {
     try {
-      const response = await fetch("/api/heatmap");
+      const response = await fetch("/json/heatmap");
       const newData = await response.json();
       renderHeatmap(newData);
-    } catch (error) {
-      console.error("Failed to load heatmap:", error);
-    }
+
+    const now = new Date();
+    document.getElementById("lastUpdated").textContent =
+      "Last updated: " + now.toLocaleString();
+  } catch (error) {
+    console.error("Failed to load heatmap:", error);
+  }
+
   }
 
   // Initial render
@@ -157,13 +183,17 @@
   window.onresize = () => Plotly.Plots.resize(document.getElementById("chart"));
 
   // Click handler
-document.getElementById("chart").on('plotly_click', function(eventData) {
+document.getElementById("chart").on('plotly_treemapclick', function(eventData) {
+
+
 
   
   const stock = eventData.points[0].label;
   const industryName = eventData.points[0].parent;
 
-  if (industryName) {
+  if (stock && industryName) {  //happen only when clicking child block
+    eventData.event.preventDefault();
+    eventData.event.stopPropagation();
     const modal = document.getElementById("stockModal");
     const frame = document.getElementById("modalFrame");
 
@@ -186,13 +216,14 @@ document.getElementById("chart").on('plotly_click', function(eventData) {
         frame.src = "";
       }
     };
+    return false; //stop zooming when clicking child block
   }
 });
 
 // Search button handler
 document.getElementById("searchBtn").onclick = () => {
-  const symbol = document.getElementById("symbolSearch").value.trim();
-  if (symbol) {
+  const symbol = document.getElementById("symbolSearch").value.trim().toUpperCase();
+  if (symbols.includes(symbol)) {
     const modal = document.getElementById("stockModal");
     const frame = document.getElementById("modalFrame");
 
@@ -215,6 +246,8 @@ document.getElementById("searchBtn").onclick = () => {
         frame.src = "";
       }
     };
+  }else{
+    alert("Symbol not found. Please search from the list.")
   }
 };
 
